@@ -28,7 +28,7 @@ const Dropdown = () => {
       {/* <label className="" htmlFor={label}>
         {label}
       </label> */}
-      <div ref={container} className="relative min-w-[190px]" id={label}>
+      <div ref={container} className="relative min-w-[100px]" id={label}>
         <button
           onClick={() => setIsOpen((prev) => !prev)}
           className={classNames(
