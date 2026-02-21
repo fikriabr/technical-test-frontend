@@ -7,4 +7,5 @@ export const ENDPOINTS = {
 }
 
 export const DEFAULT_PAGE_LIMIT = 10
+export const DEFAULT_DROPDOWN_LIMIT = 20
 export const PAGE_OPTIONS = [5, 10, 20, 50]

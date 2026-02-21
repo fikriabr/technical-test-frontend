@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import { DEFAULT_PAGE_LIMIT, PAGE_OPTIONS } from '../constants/api'
 import { getPaginationRange } from '../utils/pageRange'
 import classNames from 'classnames'
@@ -20,7 +20,6 @@ const Pagination: React.FC<PaginationProp> = ({
   changePage,
   counterLoading,
 }) => {
-  console.log('counterLoading', counterLoading)
   const onChangePageSize = (val: string) => {
     const value = parseInt(val) ?? DEFAULT_PAGE_LIMIT
     changePageSize(value)
@@ -51,13 +50,10 @@ const Pagination: React.FC<PaginationProp> = ({
         <select
           className="border border-black py-1.5 px-5 rounded-lg"
           onChange={(e) => onChangePageSize(e.target.value)}
+          defaultValue={DEFAULT_PAGE_LIMIT}
         >
           {PAGE_OPTIONS.map((option, _index) => (
-            <option
-              value={option}
-              key={String(_index)}
-              selected={pageSize === option}
-            >
+            <option value={option} key={String(_index)}>
               {option}
             </option>
           ))}
@@ -83,7 +79,7 @@ const Pagination: React.FC<PaginationProp> = ({
         {pageList.map((page) => {
           const pageIndex = parseInt(String(page))
           return (
-            <>
+            <Fragment key={page}>
               {isNaN(parseInt(String(page))) ? (
                 <span>...</span>
               ) : (
@@ -97,7 +93,7 @@ const Pagination: React.FC<PaginationProp> = ({
                   {pageIndex + 1}
                 </button>
               )}
-            </>
+            </Fragment>
           )
         })}
 

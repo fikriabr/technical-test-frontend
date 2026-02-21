@@ -1,17 +1,31 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import classNames from 'classnames'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useLoopApi, type FetchFn } from '../hooks/useLoopApi'
 
-const label = 'Label-Name'
-const values = ['']
-const placeholder = 'Add values'
-const options = [
-  { label: 'Dropdown 1', id: '1' },
-  { label: 'Dropdown 2', id: '2' },
-]
-const Dropdown = () => {
+interface DropdownProp {
+  values?: string[]
+  onChangeValues?: (value: string) => void
+  disabled?: boolean
+  label?: string
+  placeholder?: string
+  fetchFn: FetchFn
+  routeId?: string[]
+}
+const Dropdown: React.FC<DropdownProp> = ({
+  disabled,
+  label,
+  onChangeValues,
+  values,
+  placeholder,
+  fetchFn,
+  routeId,
+}) => {
   const container = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const [isOpen, setIsOpen] = useState(false)
+
+  const { options, loading, loadMore, hasMore } = useLoopApi(fetchFn, routeId)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -22,6 +36,27 @@ const Dropdown = () => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    const el = listRef.current
+    console.log('rel', el)
+    if (!el) return
+
+    function onScroll() {
+      const nearBottom =
+        el!.scrollHeight - el!.scrollTop - el!.clientHeight < 50
+      console.log('nearBottom', nearBottom)
+      if (nearBottom) loadMore()
+    }
+
+    el.addEventListener('scroll', onScroll)
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [loadMore, loading, hasMore, isOpen, routeId])
+
+  useEffect(() => {
+    if (!isOpen) return
+    loadMore()
+  }, [isOpen])
 
   return (
     <div className="relative w-full text-[13px]">
@@ -42,12 +77,12 @@ const Dropdown = () => {
             className={classNames('size-5', { 'rotate-180': isOpen })}
           />
         </button>
-        <input
+        {/* <input
           aria-hidden="true"
           name={label}
           value={values}
           className="absolute top-0 left-0 pointer-events-none opacity-0"
-        />
+        /> */}
         {isOpen && (
           <div
             className={classNames(
@@ -55,6 +90,8 @@ const Dropdown = () => {
               'animate-dropdown-in overflow-hidden shadow-sm rounded-xl',
               'border border-gray-300 z-[200] bg-white'
             )}
+            role="listbox"
+            aria-multiselectable="true"
           >
             <div className="py-2.5 px-3 border-b border-b-gray-300">
               <input
@@ -66,10 +103,48 @@ const Dropdown = () => {
                 )}
               />
             </div>
-            <div className="overflow-y-auto thin-scrollbar">
-              {options.map((option) => (
-                <div role="option">{option.label}</div>
+            <div
+              className="overflow-y-auto thin-scrollbar h-64 relative"
+              ref={listRef}
+            >
+              {options.map((option, _index) => (
+                <div
+                  key={_index}
+                  role="option"
+                  onClick={() => onChangeValues?.(option.id)}
+                  className="border-b px-3 py-2 flex gap-4 relative"
+                >
+                  <input
+                    type="checkbox"
+                    readOnly
+                    checked={values?.includes(option.id)}
+                    className="accent-blue-500"
+                  />
+                  <div>
+                    <div>
+                      {option.label} {option.subLabel && `- ${option.subLabel}`}
+                    </div>
+                    <div className="text-gray-400 flex gap-2 items-center">
+                      {option.color && (
+                        <div
+                          className="size-2 rounded-full"
+                          style={{
+                            backgroundColor: option.color
+                              ? option.color
+                              : 'white',
+                          }}
+                        />
+                      )}
+                      <span>{option.id}</span>
+                    </div>
+                  </div>
+                </div>
               ))}
+              {loading && (
+                <div className="border-b px-3 py-2 flex gap-4 h-9 fixed bottom-0 left-0 bg-white justify-center">
+                  Loading...
+                </div>
+              )}
             </div>
           </div>
         )}

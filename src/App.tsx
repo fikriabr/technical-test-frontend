@@ -6,13 +6,24 @@ import { DEFAULT_PAGE_LIMIT } from './constants/api'
 import VehicleCard from './components/VehicleCard'
 import Pagination from './components/Pagination'
 import { formatCounter } from './utils/formatter'
+import type { ResourceOption } from './interfaces/General'
+import { getRoutes } from './api/routeService'
+import { getTrips } from './api/tripService'
 
 function App() {
   const [page, setPage] = useState(0)
   const [limit, setLimit] = useState(DEFAULT_PAGE_LIMIT)
+
+  const [routeId, setRouteId] = useState<string[]>([])
+  const [tripId, setTripId] = useState<string[]>([])
+  const [routeSelected, setRouteSelected] = useState<ResourceOption[]>([])
+  const [tripSelected, setTripSelected] = useState<string[]>([])
+
   const { vehicles, errorMessage, isLoading } = useVehicles({
     page,
     limit,
+    routeId,
+    tripId,
   })
 
   const [enabled, setEnabled] = useState(false)
@@ -22,13 +33,27 @@ function App() {
       setEnabled(true)
     }, 200)
     return () => clearTimeout(timer)
-  }, [vehicles])
+  }, [limit])
 
   const { vehicles: cData, isLoading: cLoading } = useVehicles({
     page: 0,
     limit: 1,
+    routeId,
+    tripId,
     enabled,
   })
+
+  function handleToggleRoute(value: string) {
+    setRouteId((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    )
+  }
+
+  function handleToggleTrip(value: string) {
+    setTripId((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    )
+  }
 
   return (
     <>
@@ -45,8 +70,17 @@ function App() {
                   Filter
                 </div>
                 <div className="flex flex-col lg:flex-row w-full gap-4">
-                  <Dropdown />
-                  <Dropdown />
+                  <Dropdown
+                    fetchFn={getRoutes}
+                    onChangeValues={handleToggleRoute}
+                    values={routeId}
+                  />
+                  <Dropdown
+                    fetchFn={getTrips}
+                    onChangeValues={handleToggleTrip}
+                    values={tripId}
+                    routeId={routeId}
+                  />
                 </div>
               </div>
             </div>
@@ -66,6 +100,12 @@ function App() {
                 </div>
               )}
 
+              {/* <button
+                className="bg-blue-700 rounded-lg hover:bg-blue-800 text-white font-semibold w-48"
+                onClick={() => setRouteId((prev) => [...prev, 'Red'])}
+              >
+                Add Route
+              </button> */}
               <div
                 id="contents-s"
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 h-fit"
@@ -77,7 +117,7 @@ function App() {
             </div>
 
             <Pagination
-              counter={formatCounter(cData)}
+              counter={formatCounter(cData) + 1}
               changePageSize={(val) => setLimit(val)}
               pageSize={limit}
               changePage={(page) => setPage(page)}

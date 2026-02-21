@@ -1,6 +1,7 @@
 import React from 'react'
 import type { VehicleResource } from '../interfaces/Vehicles'
 import classNames from 'classnames'
+import { formatRelativeTime } from '../utils/formatter'
 
 interface CardProp extends VehicleResource {
   className?: string
@@ -12,7 +13,7 @@ const VehicleCard: React.FC<CardProp> = ({ className, attributes, type }) => {
       role="button"
       tabIndex={0}
       className={classNames(
-        'w-full h-fit bg-gray-200 rounded-lg p-4 flex flex-col gap-4',
+        'w-full h-fit bg-gray-200 rounded-lg p-4 flex flex-col gap-4 border border-gray-500 shadow-lg',
         className
       )}
     >
@@ -50,7 +51,7 @@ const VehicleCard: React.FC<CardProp> = ({ className, attributes, type }) => {
         </div>
       </div>
 
-      <div>{new Date(attributes.updated_at).toLocaleDateString()}</div>
+      <div>{formatRelativeTime(String(attributes.updated_at))}</div>
     </article>
   )
 }

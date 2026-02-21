@@ -50,6 +50,7 @@ const useVehicles = ({
     vehicles,
     isLoading,
     errorMessage,
+    retry: fetchData,
   }
 }
 
