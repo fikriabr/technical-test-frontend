@@ -23,6 +23,10 @@ export interface TripRelationships {
   route_pattern: Relationship<TripRelationType>
   service: Relationship<TripRelationType>
   shape: Relationship<TripRelationType>
+  vehicle?: Relationship<TripRelationType>
+  predictions?: Relationship<TripRelationType>
+  stops?: Relationship<TripRelationType>
+  occupancies?: Relationship<TripRelationType>
 }
 
 export type TripRelationType = 'route' | 'route_pattern' | 'service' | 'shape'

@@ -1,7 +1,35 @@
+import { useEffect, useState } from 'react'
 import Dropdown from './components/Dropdown'
 import Header from './components/Header'
+import useVehicles from './hooks/useVehicles'
+import { DEFAULT_PAGE_LIMIT } from './constants/api'
+import VehicleCard from './components/VehicleCard'
+import Pagination from './components/Pagination'
+import { formatCounter } from './utils/formatter'
 
 function App() {
+  const [page, setPage] = useState(0)
+  const [limit, setLimit] = useState(DEFAULT_PAGE_LIMIT)
+  const { vehicles, errorMessage, isLoading } = useVehicles({
+    page,
+    limit,
+  })
+
+  const [enabled, setEnabled] = useState(false)
+  useEffect(() => {
+    setEnabled(false)
+    const timer = setTimeout(() => {
+      setEnabled(true)
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [vehicles])
+
+  const { vehicles: cData, isLoading: cLoading } = useVehicles({
+    page: 0,
+    limit: 1,
+    enabled,
+  })
+
   return (
     <>
       <Header />
@@ -16,53 +44,46 @@ function App() {
                 <div className="text-xs uppercase font-bold text-gray-600">
                   Filter
                 </div>
-                <div className="flex w-full gap-4">
+                <div className="flex flex-col lg:flex-row w-full gap-4">
                   <Dropdown />
                   <Dropdown />
                 </div>
-
-                <button
-                  type="button"
-                  className="text-[13px] rounded-lg bg-[#06367c] hover:bg-[#06367c]/20 px-8 py-2 text-white font-semibold"
-                >
-                  Search
-                </button>
               </div>
-              {/* <div className="font-semibold text-slate-600 bg-slate-100 p-4 rounded-lg">
-                Applied Filter:
-              </div> */}
             </div>
             <div
               id="contents"
               className="h-full bg-slate-100 rounded-b-xl p-4 overflow-y-auto relative flex flex-col gap-4"
             >
+              {isLoading && (
+                <div className="absolute inset-0 m-auto size-24 w-48 h-24 bg-white rounded-xl p-4 text-center flex items-center justify-center shadow-xl">
+                  Loading...
+                </div>
+              )}
+
+              {errorMessage && !isLoading && (
+                <div className="absolute inset-0 m-auto size-24 w-80 h-fit bg-white rounded-xl p-4 text-center shadow-xl">
+                  {errorMessage}
+                </div>
+              )}
+
               <div
                 id="contents-s"
-                className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-fit"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 h-fit"
               >
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
-                <div className="w-full h-[250px] bg-gray-200 rounded-lg"></div>
+                {vehicles?.data.map((vehicle, id) => {
+                  return <VehicleCard key={id} {...vehicle} />
+                })}
               </div>
             </div>
 
-            <div className="flex gap-2 justify-center pt-2">
-              {['Prev', '1', '2', 'Next'].map((item) => (
-                <button
-                  key={item}
-                  className="p-1.5 px-4 bg-gray-400 text-white rounded-md"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
+            <Pagination
+              counter={formatCounter(cData)}
+              changePageSize={(val) => setLimit(val)}
+              pageSize={limit}
+              changePage={(page) => setPage(page)}
+              currentPage={page}
+              counterLoading={cLoading || isLoading}
+            />
           </div>
         </div>
       </section>
