@@ -25,7 +25,6 @@ const getTrips = async ({
     'page[limit]': limit,
   }
 
-  console.log('routeId', routeId)
   if (routeId.length > 0) {
     params['filter[route]'] = routeId.join(',')
   }

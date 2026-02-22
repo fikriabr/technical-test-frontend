@@ -28,6 +28,6 @@
 @layer components {
   .thin-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(200, 200, 200, 0.1) transparent;
+    scrollbar-color: rgba(200, 200, 200, 0.5) transparent;
   }
 }

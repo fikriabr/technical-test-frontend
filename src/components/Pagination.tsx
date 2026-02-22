@@ -33,7 +33,7 @@ const Pagination: React.FC<PaginationProp> = ({
   const pageList = getPaginationRange(currentPage, totalPage)
 
   const btnStyles = classNames(
-    'p-1 px-3 bg-blue-400 text-white rounded-md disabled:bg-gray-300'
+    'p-1 px-3 bg-blue-500 hover:bg-blue-700 text-white rounded-md disabled:bg-gray-300 text-xs lg:text-base'
   )
 
   return (
@@ -60,7 +60,7 @@ const Pagination: React.FC<PaginationProp> = ({
         </select>
       </div>
 
-      <div className="flex gap-1 justify-end">
+      <div className="flex gap-1 justify-center lg:justify-end">
         <button
           onClick={() => changePage(0)}
           className={btnStyles}
@@ -88,7 +88,7 @@ const Pagination: React.FC<PaginationProp> = ({
                     changePage(pageIndex)
                   }}
                   disabled={currentPage === pageIndex}
-                  className="p-1 px-2 min-w-9 bg-blue-400 text-white rounded-md disabled:bg-blue-700 disabled:text-blue-100"
+                  className="p-1 px-2 lg:min-w-9 bg-blue-500 hover:bg-blue-700 text-white rounded-md disabled:bg-blue-700 disabled:text-blue-100 text-xs"
                 >
                   {pageIndex + 1}
                 </button>

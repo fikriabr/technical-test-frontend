@@ -12,8 +12,7 @@ const httpClient: AxiosInstance = axios.create({
 httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.errors?.[0]?.detail
-    // || `HTTP ${error.response?.status}: ${error.response?.statusText}`
+    const message = error.response?.data?.errors?.[0]?.detail || error
     return Promise.reject(new Error(message))
   }
 )

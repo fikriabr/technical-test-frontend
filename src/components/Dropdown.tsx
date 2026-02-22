@@ -1,7 +1,8 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import classNames from 'classnames'
 import React, { useEffect, useRef, useState } from 'react'
 import { useLoopApi, type FetchFn } from '../hooks/useLoopApi'
+import Loading from './Loading'
 
 interface DropdownProp {
   values?: string[]
@@ -13,7 +14,7 @@ interface DropdownProp {
   routeId?: string[]
 }
 const Dropdown: React.FC<DropdownProp> = ({
-  disabled,
+  disabled = false,
   label,
   onChangeValues,
   values,
@@ -25,7 +26,15 @@ const Dropdown: React.FC<DropdownProp> = ({
   const listRef = useRef<HTMLDivElement>(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  const { options, loading, loadMore, hasMore } = useLoopApi(fetchFn, routeId)
+  const { options, loading, loadMore, hasMore, errorMessage } = useLoopApi(
+    fetchFn,
+    routeId
+  )
+
+  const filterOption = options.filter((opt) => values?.includes(opt.id))
+  const selectedOption = Array.from(
+    new Map(filterOption.map((item) => [item.id, item])).values()
+  )
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -53,36 +62,56 @@ const Dropdown: React.FC<DropdownProp> = ({
     return () => el.removeEventListener('scroll', onScroll)
   }, [loadMore, loading, hasMore, isOpen, routeId])
 
+  const [firstOpen, setFirstOpen] = useState(true)
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !firstOpen) return
+    setFirstOpen(false)
     loadMore()
-  }, [isOpen])
+  }, [isOpen, firstOpen])
 
   return (
     <div className="relative w-full text-[13px]">
-      {/* <label className="" htmlFor={label}>
-        {label}
-      </label> */}
       <div ref={container} className="relative min-w-[100px]" id={label}>
-        <button
-          onClick={() => setIsOpen((prev) => !prev)}
+        <div
+          aria-disabled={disabled}
+          onClick={() => {
+            if (disabled) return
+            setIsOpen((prev) => !prev)
+          }}
           className={classNames(
-            'bg-white rounded-lg h-[40px] p-2 text-gray-500 border border-transparent',
-            { 'focus:ring-2 focus:ring-blue-600': true },
+            'rounded-lg min-h-[40px] p-2 pl-5 text-gray-500 border border-transparent',
+            {
+              'focus:ring-2 focus:ring-blue-600': true,
+              'bg-white': !disabled,
+              'bg-gray-100': disabled,
+            },
             'w-full text-left flex justify-between'
           )}
         >
-          <span className="flex-1">{placeholder}</span>
+          <div className="flex flex-wrap flex-1 gap-2">
+            {selectedOption.length ? (
+              <>
+                {selectedOption.map((opt) => (
+                  <div className="px-2 border flex items-center rounded-lg">
+                    <span className="text-xs">{opt.label}</span>
+                    <XMarkIcon
+                      onClick={() => onChangeValues?.(opt.id)}
+                      className="size-4"
+                    />
+                  </div>
+                ))}
+              </>
+            ) : (
+              placeholder
+            )}
+          </div>
           <ChevronDownIcon
-            className={classNames('size-5', { 'rotate-180': isOpen })}
+            className={classNames('size-5 transition-all duration-200', {
+              'rotate-180': isOpen,
+              'rotate-0': !isOpen,
+            })}
           />
-        </button>
-        {/* <input
-          aria-hidden="true"
-          name={label}
-          value={values}
-          className="absolute top-0 left-0 pointer-events-none opacity-0"
-        /> */}
+        </div>
         {isOpen && (
           <div
             className={classNames(
@@ -141,8 +170,14 @@ const Dropdown: React.FC<DropdownProp> = ({
                 </div>
               ))}
               {loading && (
-                <div className="border-b px-3 py-2 flex gap-4 h-9 fixed bottom-0 left-0 bg-white justify-center">
-                  Loading...
+                <div className="px-3 py-5 w-36 rounded-xl drop-shadow-xl flex gap-4 h-9 fixed inset-0 m-auto bg-white justify-center">
+                  <Loading size="sm" loadingText="Loading..." />
+                </div>
+              )}
+
+              {errorMessage && !loading && (
+                <div className="px-5 py-4 h-fit w-fit rounded-lg border border-red-500 flex gap-4 fixed inset-0 m-auto bg-white justify-center ">
+                  Error: {errorMessage}
                 </div>
               )}
             </div>

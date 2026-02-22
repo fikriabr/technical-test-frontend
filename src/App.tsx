@@ -1,25 +1,23 @@
 import { useEffect, useState } from 'react'
-import Dropdown from './components/Dropdown'
+import Filter from './components/Filter'
 import Header from './components/Header'
-import useVehicles from './hooks/useVehicles'
-import { DEFAULT_PAGE_LIMIT } from './constants/api'
-import VehicleCard from './components/VehicleCard'
 import Pagination from './components/Pagination'
+import VehicleWrapper from './components/VehicleWrapper'
+import { DEFAULT_PAGE_LIMIT } from './constants/api'
+import useVehicles from './hooks/useVehicles'
+import { type VehicleResource } from './interfaces/Vehicles'
 import { formatCounter } from './utils/formatter'
-import type { ResourceOption } from './interfaces/General'
-import { getRoutes } from './api/routeService'
-import { getTrips } from './api/tripService'
+import VehicleModal from './components/VehicleModal'
 
 function App() {
   const [page, setPage] = useState(0)
   const [limit, setLimit] = useState(DEFAULT_PAGE_LIMIT)
-
   const [routeId, setRouteId] = useState<string[]>([])
   const [tripId, setTripId] = useState<string[]>([])
-  const [routeSelected, setRouteSelected] = useState<ResourceOption[]>([])
-  const [tripSelected, setTripSelected] = useState<string[]>([])
+  const [selectedVehicle, setSelectedVehicle] =
+    useState<VehicleResource | null>(null)
 
-  const { vehicles, errorMessage, isLoading } = useVehicles({
+  const { vehicles, errorMessage, isLoading, retry } = useVehicles({
     page,
     limit,
     routeId,
@@ -61,60 +59,20 @@ function App() {
       <section className="pt-[100px] w-full h-screen">
         <div className="h-full w-full flex items-center justify-center p-6">
           <div className="h-full w-full rounded-xl flex flex-col">
-            <div
-              id="filter"
-              className="h-fit border-b flex flex-col gap-4 p-4 bg-slate-300 rounded-t-xl"
-            >
-              <div className="flex gap-3 w-full items-center flex-col lg:flex-row">
-                <div className="text-xs uppercase font-bold text-gray-600">
-                  Filter
-                </div>
-                <div className="flex flex-col lg:flex-row w-full gap-4">
-                  <Dropdown
-                    fetchFn={getRoutes}
-                    onChangeValues={handleToggleRoute}
-                    values={routeId}
-                  />
-                  <Dropdown
-                    fetchFn={getTrips}
-                    onChangeValues={handleToggleTrip}
-                    values={tripId}
-                    routeId={routeId}
-                  />
-                </div>
-              </div>
-            </div>
-            <div
-              id="contents"
-              className="h-full bg-slate-100 rounded-b-xl p-4 overflow-y-auto relative flex flex-col gap-4"
-            >
-              {isLoading && (
-                <div className="absolute inset-0 m-auto size-24 w-48 h-24 bg-white rounded-xl p-4 text-center flex items-center justify-center shadow-xl">
-                  Loading...
-                </div>
-              )}
+            <Filter
+              handleToggleRoute={handleToggleRoute}
+              handleToggleTrip={handleToggleTrip}
+              routeId={routeId}
+              tripId={tripId}
+            />
 
-              {errorMessage && !isLoading && (
-                <div className="absolute inset-0 m-auto size-24 w-80 h-fit bg-white rounded-xl p-4 text-center shadow-xl">
-                  {errorMessage}
-                </div>
-              )}
-
-              {/* <button
-                className="bg-blue-700 rounded-lg hover:bg-blue-800 text-white font-semibold w-48"
-                onClick={() => setRouteId((prev) => [...prev, 'Red'])}
-              >
-                Add Route
-              </button> */}
-              <div
-                id="contents-s"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 h-fit"
-              >
-                {vehicles?.data.map((vehicle, id) => {
-                  return <VehicleCard key={id} {...vehicle} />
-                })}
-              </div>
-            </div>
+            <VehicleWrapper
+              doSelectVehicle={(val) => setSelectedVehicle(val)}
+              errorMessage={errorMessage}
+              isLoading={isLoading}
+              retry={retry}
+              vehicles={vehicles}
+            />
 
             <Pagination
               counter={formatCounter(cData) + 1}
@@ -127,6 +85,14 @@ function App() {
           </div>
         </div>
       </section>
+
+      {selectedVehicle && (
+        <VehicleModal
+          isOpen={!!selectedVehicle}
+          onClose={() => setSelectedVehicle(null)}
+          vehicle={selectedVehicle}
+        />
+      )}
     </>
   )
 }

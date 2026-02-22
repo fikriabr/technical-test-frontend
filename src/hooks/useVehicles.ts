@@ -6,6 +6,18 @@ import { type APIResponse } from '../interfaces/APIResponse'
 interface VehicleProp extends VehicleParam {
   enabled?: boolean
 }
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState<T>(value)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+
+  return debounced
+}
+
 const useVehicles = ({
   page,
   limit,
@@ -16,6 +28,9 @@ const useVehicles = ({
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [vehicles, setVehicles] = useState<APIResponse<VehicleResource>>()
+
+  const bRouteId = useDebounce(routeId, 1000)
+  const bTripId = useDebounce(tripId, 1000)
 
   // fetch all vehicle
   const fetchData = useCallback(async () => {
@@ -38,8 +53,7 @@ const useVehicles = ({
     } finally {
       setIsLoading(false)
     }
-  }, [limit, page, JSON.stringify(routeId), JSON.stringify(tripId)])
-  //  JSON.stringify(routeId), JSON.stringify(tripId)
+  }, [limit, page, JSON.stringify(bRouteId), JSON.stringify(bTripId)])
 
   useEffect(() => {
     if (!enabled) return
