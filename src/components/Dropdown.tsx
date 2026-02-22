@@ -122,12 +122,13 @@ const Dropdown: React.FC<DropdownProp> = ({
             role="listbox"
             aria-multiselectable="true"
           >
-            <div className="py-2.5 px-3 border-b border-b-gray-300">
+            <div className="py-2.5 px-3 border-b border-b-gray-300 opacity-20">
               <input
                 name={'search' + label}
                 placeholder="Search..."
+                disabled
                 className={classNames(
-                  'bg-white border border-gray-300 w-full py-2 px-2.5',
+                  'bg-white border border-gray-300 w-full py-2 px-2.5 ',
                   'rounded-lg text-[13px]'
                 )}
               />

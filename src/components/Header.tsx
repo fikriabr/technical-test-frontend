@@ -1,10 +1,7 @@
-import { MapIcon, TruckIcon } from '@heroicons/react/24/outline'
+import { TruckIcon } from '@heroicons/react/24/outline'
 
 const Header = () => {
-  const menu = [
-    { text: 'Vehicles', url: '/', icon: TruckIcon },
-    { text: 'View on Map', url: '/map', icon: MapIcon },
-  ]
+  const menu = [{ text: 'Vehicles', url: '/', icon: TruckIcon }]
   return (
     <header className="fixed h-[100px] bg-[#06367c] w-full flex items-center justify-center">
       <div className="container mx-6 lg:mx-0">
